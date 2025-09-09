@@ -1,0 +1,9 @@
+version: '3.8'
+services:
+  app:
+    image: ${DOCKER_USERNAME:-ahmedshams8}/app:latest
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
