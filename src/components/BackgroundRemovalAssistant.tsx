@@ -1,32 +1,48 @@
 'use client';
 
-import { useState } from 'react';
-import { getAlgorithmSuggestion } from '@/app/actions';
+import { useState, useRef } from 'react';
+import { removeImageBackground } from '@/app/actions';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Wand2 } from 'lucide-react';
-import type { AlgorithmSelectionOutput } from '@/ai/flows/automated-algorithm-selection';
-
-const SAMPLE_IMAGE_DATA_URI = "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAYABgAAD/4QAiRXhpZgAATU0AKgAAAAgAAQESAAMAAAABAAEAAAAAAAD/2wBDAAIBAQIBAQICAgICAgICAwUDAwMDAwYEBAMFBwYHBwcGBwcICQsJCAgKCAcHCg0KCgsMDAwMBwkODw0MDgsMDAz/2wBDAQICAgMDAwYDAwYMCAcIDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAz/wAARCAAgACADAREAAhEBAxEB/8QAGQABAQEBAQEAAAAAAAAAAAAAAwIBBwQA/8QAIxABAQEAAgICAgIDAAAAAAAAAAECAxESBCExBUFRYSITMv/EABcBAQEBAQAAAAAAAAAAAAAAAAECAwD/xAAaEQEBAQEBAQEAAAAAAAAAAAAAARIBEQMh/9oADAMBAAIRAxEBAxEB/AAAqBgCgAAAAAAAAACgYAAKAaBFAaACoGAKAAAKBigAAAAAoGAKAAAAAAAACgYAAAAAAAAoGAKAAAKAaBigADQAAAKBgAAAAAA//a";
-
+import { Download, Loader2, UploadCloud, Wand2, X } from 'lucide-react';
+import Image from 'next/image';
 
 export function BackgroundRemovalAssistant() {
-  const [photoDataUri, setPhotoDataUri] = useState('');
-  const [taskDescription, setTaskDescription] = useState('');
+  const [originalImage, setOriginalImage] = useState<string | null>(null);
+  const [processedImage, setProcessedImage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<AlgorithmSelectionOutput | null>(null);
   const { toast } = useToast();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (loadEvent) => {
+        setOriginalImage(loadEvent.target?.result as string);
+        setProcessedImage(null);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleRemoveBackground = async () => {
+    if (!originalImage) {
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'Please upload an image first.',
+      });
+      return;
+    }
+
     setLoading(true);
-    setResult(null);
+    setProcessedImage(null);
 
-    const { data, error } = await getAlgorithmSuggestion(photoDataUri, taskDescription);
+    const { data, error } = await removeImageBackground(originalImage);
 
     if (error) {
       toast({
@@ -35,98 +51,121 @@ export function BackgroundRemovalAssistant() {
         description: error,
       });
     } else if (data) {
-      setResult(data);
+      setProcessedImage(data.imageWithBackgroundRemoved);
     }
     setLoading(false);
   };
-  
-  const useSampleImage = () => {
-    setPhotoDataUri(SAMPLE_IMAGE_DATA_URI);
-    setTaskDescription("A photo of a white cat on a floral background. Please remove the background.");
+
+  const clearImages = () => {
+    setOriginalImage(null);
+    setProcessedImage(null);
+    if(fileInputRef.current) {
+        fileInputRef.current.value = "";
+    }
+  }
+
+  const handleDownload = () => {
+    if (!processedImage) return;
+    const link = document.createElement('a');
+    link.href = processedImage;
+    link.download = 'background-removed.png';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start">
       <Card>
-        <form onSubmit={handleSubmit}>
-          <CardHeader>
-            <CardTitle className="font-headline">Get a Suggestion</CardTitle>
-            <CardDescription>
-              Provide an image data URI and an optional description.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="photo-uri">Photo Data URI</Label>
-              <Textarea
-                id="photo-uri"
-                placeholder="data:image/png;base64,..."
-                value={photoDataUri}
-                onChange={(e) => setPhotoDataUri(e.target.value)}
-                required
-                rows={4}
-              />
+        <CardHeader>
+          <CardTitle className="font-headline">Upload your Image</CardTitle>
+          <CardDescription>
+            Select an image file to remove its background.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {originalImage ? (
+            <div className="relative group">
+                <Image
+                    src={originalImage}
+                    alt="Original image"
+                    width={500}
+                    height={300}
+                    className="rounded-md object-contain w-full h-auto"
+                />
+                 <Button
+                    variant="destructive"
+                    size="icon"
+                    className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                    onClick={clearImages}
+                >
+                    <X size={18}/>
+                    <span className="sr-only">Clear image</span>
+                </Button>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="description">Task Description (Optional)</Label>
+          ) : (
+            <div 
+              className="flex flex-col items-center justify-center p-8 border-2 border-dashed rounded-md cursor-pointer hover:bg-muted"
+              onClick={() => fileInputRef.current?.click()}
+            >
+              <UploadCloud className="w-12 h-12 text-muted-foreground"/>
+              <p className="mt-4 text-muted-foreground">Click to upload an image</p>
               <Input
-                id="description"
-                placeholder="e.g., Remove background from product photo"
-                value={taskDescription}
-                onChange={(e) => setTaskDescription(e.target.value)}
+                id="photo-upload"
+                type="file"
+                accept="image/*"
+                ref={fileInputRef}
+                onChange={handleFileChange}
+                className="hidden"
               />
             </div>
-          </CardContent>
-          <CardFooter className="flex justify-between">
-            <Button type="button" variant="outline" onClick={useSampleImage}>
-              Use Sample
-            </Button>
-            <Button type="submit" disabled={loading}>
-              {loading ? <Loader2 className="animate-spin" /> : <Wand2 />}
-              {loading ? 'Analyzing...' : 'Suggest Algorithm'}
-            </Button>
-          </CardFooter>
-        </form>
+          )}
+        </CardContent>
+        <CardFooter className="flex justify-end">
+          <Button onClick={handleRemoveBackground} disabled={loading || !originalImage}>
+            {loading ? <Loader2 className="animate-spin" /> : <Wand2 />}
+            {loading ? 'Processing...' : 'Remove Background'}
+          </Button>
+        </CardFooter>
       </Card>
-      
+
       <div className="h-full">
         {loading && (
-           <Card className="flex flex-col items-center justify-center h-full min-h-[300px] border-dashed">
-            <Loader2 className="w-12 h-12 text-muted-foreground animate-spin"/>
+          <Card className="flex flex-col items-center justify-center h-full min-h-[300px] border-dashed">
+            <Loader2 className="w-12 h-12 text-muted-foreground animate-spin" />
             <p className="mt-4 text-muted-foreground">AI is thinking...</p>
-           </Card>
-        )}
-        {result && (
-          <Card className="bg-gradient-to-br from-secondary/50 to-background h-full animate-in fade-in duration-500">
-             <CardHeader>
-                <CardTitle className="font-headline text-accent flex items-center gap-2">
-                    <Wand2 />
-                    AI Recommendation
-                </CardTitle>
-             </CardHeader>
-             <CardContent className="space-y-4">
-                <div>
-                    <Label className="text-xs uppercase tracking-wider text-muted-foreground">Algorithm</Label>
-                    <p className="text-lg font-semibold">{result.algorithm}</p>
-                </div>
-                 <div>
-                    <Label className="text-xs uppercase tracking-wider text-muted-foreground">Parameters</Label>
-                    <pre className="mt-1 p-3 bg-primary/5 rounded-md text-sm text-foreground/80 overflow-x-auto">
-                        <code>{JSON.stringify(result.parameters, null, 2)}</code>
-                    </pre>
-                </div>
-                <div>
-                    <Label className="text-xs uppercase tracking-wider text-muted-foreground">Reasoning</Label>
-                    <p className="mt-1 text-muted-foreground italic">"{result.reasoning}"</p>
-                </div>
-             </CardContent>
           </Card>
         )}
-         {!loading && !result && (
-             <Card className="flex flex-col items-center justify-center h-full min-h-[300px] border-dashed">
-                <Wand2 className="w-12 h-12 text-muted-foreground/50"/>
-                <p className="mt-4 text-muted-foreground">Your result will appear here</p>
-            </Card>
+        {processedImage && (
+          <Card className="bg-gradient-to-br from-secondary/50 to-background h-full animate-in fade-in duration-500">
+            <CardHeader>
+              <CardTitle className="font-headline text-accent flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                    <Wand2 />
+                    Result
+                </div>
+                <Button variant="outline" size="sm" onClick={handleDownload}>
+                    <Download size={16}/>
+                    Download
+                </Button>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="flex items-center justify-center">
+                <Image
+                    src={processedImage}
+                    alt="Processed image with background removed"
+                    width={500}
+                    height={300}
+                    className="rounded-md object-contain"
+                />
+            </CardContent>
+          </Card>
+        )}
+        {!loading && !processedImage && (
+          <Card className="flex flex-col items-center justify-center h-full min-h-[300px] border-dashed">
+            <Wand2 className="w-12 h-12 text-muted-foreground/50" />
+            <p className="mt-4 text-muted-foreground">Your result will appear here</p>
+          </Card>
         )}
       </div>
     </div>
