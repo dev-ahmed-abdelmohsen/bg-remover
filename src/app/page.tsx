@@ -1,29 +1,7 @@
 import Image from 'next/image';
-import { Github, Linkedin, Link as LinkIcon } from 'lucide-react';
-import { Skills } from '@/components/Skills';
-import { ProjectCard } from '@/components/ProjectCard';
-import { CountdownTimer } from '@/components/CountdownTimer';
-import { Certifications } from '@/components/Certifications';
-import { BackgroundRemovalAssistant } from '@/components/BackgroundRemovalAssistant';
+import { Github, Linkedin, Link as LinkIcon, Wand2 } from 'lucide-react';
+import { ServiceCard } from '@/components/ServiceCard';
 import { Button } from '@/components/ui/button';
-
-const projects = [
-  {
-    title: 'E-commerce API',
-    description: 'A robust and scalable RESTful API for an e-commerce platform, built with performance and security in mind.',
-    tags: ['Node.js', 'MongoDB', 'Docker', 'Express'],
-  },
-  {
-    title: 'Task Management Dashboard',
-    description: 'A full-stack application to help teams organize, track, and manage tasks and projects effectively.',
-    tags: ['React', 'Node.js', 'MongoDB', 'Tailwind CSS'],
-  },
-  {
-    title: 'Real-time Chat Application',
-    description: 'A web-based chat application enabling instant messaging and communication between users.',
-    tags: ['React', 'Node.js', 'Socket.io', 'Express'],
-  },
-];
 
 export default function Home() {
   return (
@@ -58,46 +36,30 @@ export default function Home() {
             </p>
           </section>
 
-          {/* Skills Section */}
-          <section id="skills" className="py-20 animate-in fade-in slide-in-from-bottom-8 duration-700 delay-300">
-            <h2 className="font-headline text-3xl md:text-4xl font-bold text-center mb-12">My Skills</h2>
-            <Skills />
-          </section>
-
-          {/* Certifications Section */}
-          <section id="certifications" className="py-20 animate-in fade-in slide-in-from-bottom-8 duration-700 delay-400">
-            <h2 className="font-headline text-3xl md:text-4xl font-bold text-center mb-12">Certifications</h2>
-            <Certifications />
-          </section>
-
-          {/* Projects Section */}
-          <section id="projects" className="py-20 animate-in fade-in slide-in-from-bottom-8 duration-700 delay-500">
-            <h2 className="font-headline text-3xl md:text-4xl font-bold text-center mb-12">Key Projects</h2>
+          {/* Services Section */}
+          <section id="services" className="py-20 text-center max-w-5xl mx-auto animate-in fade-in slide-in-from-bottom-8 duration-700 delay-300">
+            <h2 className="font-headline text-3xl md:text-4xl font-bold mb-8">What I Can Do For You</h2>
+            <p className="text-lg text-muted-foreground leading-relaxed mb-12 max-w-3xl mx-auto">
+              I'm building a suite of intelligent tools to automate and enhance your creative workflows. Here's a preview of what's coming soon.
+            </p>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {projects.map((project) => (
-                <ProjectCard key={project.title} {...project} />
-              ))}
+              <ServiceCard
+                icon={Wand2}
+                title="AI Background Removal"
+                description="Instantly remove the background from any image with incredible precision. Perfect for product photos, portraits, and more."
+              />
+              <ServiceCard
+                title="Coming Soon"
+                description="More exciting services are in development. Stay tuned for updates!"
+                isComingSoon
+              />
+               <ServiceCard
+                title="Coming Soon"
+                description="More exciting services are in development. Stay tuned for updates!"
+                isComingSoon
+              />
             </div>
           </section>
-
-          {/* Countdown Section */}
-          <section id="wip" className="py-20 text-center max-w-3xl mx-auto animate-in fade-in slide-in-from-bottom-8 duration-700 delay-600">
-            <h2 className="font-headline text-3xl md:text-4xl font-bold mb-4">Work in Progress</h2>
-            <p className="text-lg text-muted-foreground mb-6">
-              Currently working on an automated background removal tool with Next.js and Azure DevOps.
-            </p>
-            <CountdownTimer />
-          </section>
-          
-          {/* AI Assistant Section */}
-          <section id="ai-tool" className="py-20 animate-in fade-in slide-in-from-bottom-8 duration-700 delay-700">
-             <h2 className="font-headline text-3xl md:text-4xl font-bold text-center mb-4">Background Removal Assistant</h2>
-             <p className="text-lg text-muted-foreground mb-12 text-center max-w-3xl mx-auto">
-              Test the AI model that selects the best algorithm for removing an image's background. Provide an image as a data URI to get a suggestion.
-            </p>
-            <BackgroundRemovalAssistant />
-          </section>
-
         </div>
       </main>
 
