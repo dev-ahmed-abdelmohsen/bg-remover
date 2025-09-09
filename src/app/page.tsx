@@ -1,4 +1,5 @@
 import Image from 'next/image';
+import Link from 'next/link';
 import { Github, Linkedin, Link as LinkIcon, Wand2 } from 'lucide-react';
 import { ServiceCard } from '@/components/ServiceCard';
 import { Button } from '@/components/ui/button';
@@ -43,11 +44,13 @@ export default function Home() {
               I'm building a suite of intelligent tools to automate and enhance your creative workflows. Here's a preview of what's coming soon.
             </p>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              <ServiceCard
-                icon={Wand2}
-                title="AI Background Removal"
-                description="Instantly remove the background from any image with incredible precision. Perfect for product photos, portraits, and more."
-              />
+              <Link href="/services/background-removal" className="flex h-full">
+                <ServiceCard
+                  icon={Wand2}
+                  title="AI Background Removal"
+                  description="Instantly remove the background from any image with incredible precision. Perfect for product photos, portraits, and more."
+                />
+              </Link>
               <ServiceCard
                 title="Coming Soon"
                 description="More exciting services are in development. Stay tuned for updates!"
