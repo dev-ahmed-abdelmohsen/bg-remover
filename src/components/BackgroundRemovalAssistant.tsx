@@ -1,11 +1,10 @@
 'use client';
 
 import { useState, useRef } from 'react';
-import { removeImageBackground } from '@/app/actions';
+import removeBackground from '@imgly/background-removal';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Download, Loader2, UploadCloud, Wand2, X } from 'lucide-react';
 import Image from 'next/image';
@@ -42,18 +41,19 @@ export function BackgroundRemovalAssistant() {
     setLoading(true);
     setProcessedImage(null);
 
-    const { data, error } = await removeImageBackground(originalImage);
-
-    if (error) {
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: error,
-      });
-    } else if (data) {
-      setProcessedImage(data.imageWithBackgroundRemoved);
+    try {
+      const blob = await removeBackground(originalImage);
+      const url = URL.createObjectURL(blob);
+      setProcessedImage(url);
+    } catch (error: any) {
+        toast({
+            variant: 'destructive',
+            title: 'Error',
+            description: error.message || 'Failed to remove background.',
+        });
+    } finally {
+        setLoading(false);
     }
-    setLoading(false);
   };
 
   const clearImages = () => {
@@ -133,7 +133,7 @@ export function BackgroundRemovalAssistant() {
         {loading && (
           <Card className="flex flex-col items-center justify-center h-full min-h-[300px] border-dashed">
             <Loader2 className="w-12 h-12 text-muted-foreground animate-spin" />
-            <p className="mt-4 text-muted-foreground">AI is thinking...</p>
+            <p className="mt-4 text-muted-foreground">Processing in your browser...</p>
           </Card>
         )}
         {processedImage && (
@@ -156,6 +156,7 @@ export function BackgroundRemovalAssistant() {
                     alt="Processed image with background removed"
                     width={500}
                     height={300}
+                    onLoad={() => URL.revokeObjectURL(processedImage)}
                     className="rounded-md object-contain"
                 />
             </CardContent>
