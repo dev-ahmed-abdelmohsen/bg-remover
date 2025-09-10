@@ -2,14 +2,14 @@ name: CD - Deploy to Azure VM
 
 on:
   workflow_run:
-    workflows: ["CI/CD Pipeline"]  # اسم الـ workflow اللي عامله للـ CI
+    workflows: ["CI/CD Pipeline"] 
     types:
       - completed
     branches: [main]
 
 jobs:
   deploy:
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}  # بتشتغل فقط لو الـ CI نجح
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
