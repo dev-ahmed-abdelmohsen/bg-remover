@@ -1,0 +1,44 @@
+name: CD - Deploy to Azure VM
+
+on:
+  workflow_run:
+    workflows: ["CI/CD Pipeline"]  # اسم الـ workflow اللي عامله للـ CI
+    types:
+      - completed
+    branches: [main]
+
+jobs:
+  deploy:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}  # بتشتغل فقط لو الـ CI نجح
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Deploy to Azure VM via SSH
+        uses: appleboy/ssh-action@v0.1.6
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          password: ${{ secrets.SSH_PASSWORD }}
+          script: |
+            # Login to Docker Hub
+            echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+            
+            # Pull the latest image
+            docker pull ahmedshams8/bg-remover:latest
+            
+            # Stop and remove old container if exists
+            docker stop bg-remover || true
+            docker rm bg-remover || true
+            
+            # Run new container
+            docker run -d \
+              --name bg-remover \
+              --restart always \
+              -p 3000:3000 \
+              -e NODE_ENV=production \
+              ahmedshams8/bg-remover:latest
+            
+            # Clean up old images
+            docker image prune -f
