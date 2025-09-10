@@ -49,4 +49,4 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Push Docker image
-        run: docker push ahmedshams8/bg-remover:latest
+        run: docker push    
