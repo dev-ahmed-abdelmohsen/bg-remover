@@ -17,7 +17,7 @@ describe("Docker Tests", () => {
     // Simple checks for key Docker instructions
     expect(dockerfile).toContain("FROM");
     expect(dockerfile).toContain("WORKDIR");
-    
+
     // This will always pass - good for CI demo
     expect(true).toBe(true);
   });

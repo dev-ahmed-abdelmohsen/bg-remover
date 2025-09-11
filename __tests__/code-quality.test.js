@@ -8,7 +8,7 @@ describe("Code Quality Tests", () => {
     );
     // Simple check for scripts section
     expect(packageJson.scripts).toBeDefined();
-    
+
     // This will always pass - good for CI demo
     expect(true).toBe(true);
   });

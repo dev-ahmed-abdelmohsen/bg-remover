@@ -7,7 +7,7 @@ describe("CI Pipeline Tests", () => {
     const githubActionsExists = fs.existsSync(
       path.join(process.cwd(), ".github", "workflows")
     );
-    
+
     // Just test if workflows directory exists, that's enough for CI testing
     expect(githubActionsExists).toBe(true);
   });
@@ -16,18 +16,21 @@ describe("CI Pipeline Tests", () => {
     // Load the CI workflow file
     const workflowsDir = path.join(process.cwd(), ".github", "workflows");
     const files = fs.readdirSync(workflowsDir);
-    const ciYmlFile = files.find(file => file === "ci.yml");
-    
+    const ciYmlFile = files.find((file) => file === "ci.yml");
+
     // Check if ci.yml exists
     expect(ciYmlFile).toBeDefined();
-    
+
     if (ciYmlFile) {
-      const ciConfig = fs.readFileSync(path.join(workflowsDir, ciYmlFile), "utf8");
-      
+      const ciConfig = fs.readFileSync(
+        path.join(workflowsDir, ciYmlFile),
+        "utf8"
+      );
+
       // Simple tests - just check if file contains certain keywords
       expect(ciConfig.includes("jobs")).toBe(true);
       expect(ciConfig.includes("steps")).toBe(true);
-      
+
       // This test will always pass - just to show the pipeline working
       expect(true).toBe(true);
     }

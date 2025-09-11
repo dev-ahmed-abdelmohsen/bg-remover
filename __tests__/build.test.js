@@ -16,7 +16,7 @@ describe("Build Process Tests", () => {
     // Simple checks
     expect(packageJson.name).toBeDefined();
     expect(packageJson.scripts).toBeDefined();
-    
+
     // This will always pass - good for CI demo
     expect(true).toBe(true);
   });
